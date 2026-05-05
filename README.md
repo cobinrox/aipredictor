@@ -119,3 +119,88 @@ numpy>=1.25.0
 2_activate_env.bat
 3_install_dependencies.bat
 
+## Extensibility
+- New data domains can be added by writing a small preprocessing main script (e.g., predict_stock_main.py) while reusing the core xformer.py.
+- Supports automatic preprocessing:
+    - Integers: map to indices
+    - Floats: normalize to 0–1
+    - Categorical: map symbols to indices
+- Allows future UI integration for parameter input and sequence generation.
+
+## Educational Purpose
+- Demonstrates Transformer sequence learning in a concrete, approachable way.
+- Shows how patterns in sequences (music, DNA, stock trends) can be learned and predicted.
+- Helps students understand general-purpose AI sequence prediction, not limited to text.
+
+## UML
+```
+          +----------------------+
+          | predict_*_main.py    |
+          | (melodies, stock,    |
+          |  DNA, etc.)          |
+          +----------+-----------+
+                     |
+                     | calls train_and_predict()
+                     v
+          +----------------------+
+          |    xformer.py        |
+          | -------------------  |
+          | SequenceTransformer  |
+          |  - embedding         |
+          |  - positional encode |
+          |  - transformer layers|
+          |  - fc output         |
+          +----------+-----------+
+                     |
+    +----------------+----------------+
+    |                                 |
++---v---+                       +-----v------+
+| model |                       | optimizer  |
+| (nn.Module)                   | (Adam)     |
++-------+                       +------------+
+    |
+    v
++---v---+
+| criterion |
+| (CrossEntropyLoss) |
++-----------+
+
+## Sequence Flow Diagram (ASCII)
+
+```text
+Input Sequence (length = seq_length)
+      |
+      v
++----------------+
+|  Embedding     |  <-- Maps each value/note to a vector
++----------------+
+      |
+      v
++----------------+
+| Positional     |  <-- Adds position info so model knows order
+| Encoding       |
++----------------+
+      |
+      v
++----------------+
+| Transformer    |  <-- Multi-head self-attention + feedforward layers
+| Layers         |
++----------------+
+      |
+      v
++----------------+
+| Fully Connected|  <-- Projects to output space (vocab size / value range)
+| Output Layer   |
++----------------+
+      |
+      v
+Predicted Next Item(s)
+      |
+      v
+(Optional) Loop back to include prediction in next input
+for sequence generation of length generate_steps
+```
+
+- predict_*_main.py scripts handle data preprocessing and call the core transformer module.
+- SequenceTransformer contains the embedding, positional encoding, transformer layers, and output layer.
+- The optimizer and criterion are used during training to update model weights.
